@@ -13,7 +13,6 @@ model User{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   email String?  @unique
-  password String
   hash String?
   firstName String?  //optional 
   lastName String?  //optional
@@ -21,6 +20,8 @@ model User{
   nationalIDImage String?  
 	nationalID  String?
   status String?
+  imagePath String?
+  message String?
 
 }
 model Image {

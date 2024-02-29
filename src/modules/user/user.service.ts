@@ -7,12 +7,12 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
 import { User } from '@prisma/client';
-import { UpdateUserDto } from './dto/user.dto';
+import { UserDto } from './dto/user.dto';
 import { CustomBadRequestException } from '../../utils/custom.exceptions';
 import { LoggerService } from '../../modules/logger/logger.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserDto } from './dto/user.auth.dto';
+import { UserAuthDto } from './dto/user.auth.dto';
 import passport from 'passport';
 import { MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,59 +28,63 @@ export class UserService {
   ) {}
 
   async createUser(dto: UserDto, profile_picture: MemoryStorageFile ,nationalID_Image:Express.Multer.File) {
-try{
-    const email = dto.email.toString();
-    const hash = await argon.hash(dto.password.toString());
-  
-    // Check if a user with the provided email already exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
-    if (existingUser) {
-      throw new NotFoundException(`User with email ${email} already exists`);
-    }
-  
-    const id: string = uuidv4();
-    const filename = `profile_picture${id}`;
-    const NationalIDImageName = `nationalID_Image${id}`;
+   try{
+      const email = dto.email.toString();
+      const hash = await argon.hash(dto.password.toString());
+
+      // Check if a user with the provided email already exists
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      if (existingUser) {
+        throw new NotFoundException(`User with email ${email} already exists`);
+      }
+
+      const id: string = uuidv4();
+      const filename = `profile_picture${id}`;
+      const NationalIDImageName = `nationalID_Image${id}`;
+      const uploadPath = path.join(process.cwd(), 'uploads', 'img');
+      const nationalIDImagePath = path.join(process.cwd(), 'uploads', 'img');
+
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(path.dirname(uploadPath))) {
+        fs.mkdirSync(path.dirname(uploadPath), { recursive: true });
+      }
     
-    const uploadPath = path.join(process.cwd(), 'uploads', 'img', filename);
+      // // Save nationalID_Image in the database
+      // const nationalIDImageBuffer = fs.readFileSync(nationalIDImagePath);
+      // const nationalIDImageBase64 = nationalIDImageBuffer.toString('base64');
 
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(path.dirname(uploadPath))) {
-      fs.mkdirSync(path.dirname(uploadPath), { recursive: true });
-    }
- 
-    const data = {
-      ...(dto as any),
-      hash: await argon.hash(dto.password.toString()),
-      profile_pic: filename,
-      nationalIDImage:NationalIDImageName
-      
-    }
-    
-    // Create the new user if no user with the provided email exists
-    const addedUser = await this.prisma.user.create({
-      data
-    });
+      const data = {
+        ...(dto as any),
+        hash: await argon.hash(dto.password.toString()),
+        profile_pic: filename,
+        nationalIDImage: NationalIDImageName,
+      };
 
-    // Remove 'hash' property from addedUser
-    if (addedUser.hasOwnProperty('hash')) {
-      delete (addedUser as any).hash;
-    }
-  
-    return addedUser;
-  
+      // Create the new user if no user with the provided email exists
+      const addedUser = await this.prisma.user.create({
+        data,
+      });
 
-    } catch (error) {
-    if(error instanceof NotFoundException) {
-      throw error; // Re-throw the CustomBadRequestException
-    } else {
-    this.loggerService.logError(error);
-    throw new InternalServerErrorException('Error create  user');
+      // Remove 'hash' property from addedUser
+      if (addedUser.hasOwnProperty('hash')) {
+        delete (addedUser as any).hash;
+      }
+
+      return addedUser;
+
   }
 
-    }}
+   catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error; // Re-throw the CustomBadRequestException
+      } else {
+        this.loggerService.logError(error);
+        throw new InternalServerErrorException('Error create user');
+      }
+    }
+  } 
    async findAllUsers() {
     try {
       return this.prisma.user.findMany();
@@ -110,7 +114,7 @@ try{
     }
   }
 
-  async update(id: number, userData: UpdateUserDto) {
+  async update(id: number, userData:UserDto) {
     try {
       const existingUser = await this.prisma.user.findUnique({ where: { id } });
       if (!existingUser) {
@@ -164,4 +168,21 @@ try{
       }
     }
   }
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    try {
+      return this.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+    } catch (error) {
+      this.loggerService.logError(error);
+      throw new InternalServerErrorException('Error getting user by email');
+    }
+  }
+
+
+
+
 }

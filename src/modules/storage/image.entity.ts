@@ -14,6 +14,9 @@ export class Image {
   data: Buffer;
 
   @Column()
+  url: string;
+  
+  @Column()
   filename: string;
 
   @Column()

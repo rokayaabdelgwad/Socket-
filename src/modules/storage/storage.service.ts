@@ -20,13 +20,13 @@ import { Image } from "./image.entity";
 
 
 @Injectable()
-export class storageService {
+export class StorageService {
   constructor(
     @InjectRepository(Image)
     private readonly imageRepository: Repository<Image>,
   ) {}
 
-  async uploadImage(nationalID_Image:Express.Multer.File): Promise<Image> {
+  async uploadImage(nationalID_Image: Express.Multer.File): Promise<Image> {
     const image = new Image();
     image.name = nationalID_Image.originalname;
     image.data = nationalID_Image.buffer;
@@ -34,7 +34,7 @@ export class storageService {
     return await this.imageRepository.save(image);
   }
 }
-  
+
 
 
 

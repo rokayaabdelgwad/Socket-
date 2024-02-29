@@ -1,6 +1,6 @@
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 
-export class UpdateUserDto {
+export class UserDto {
   constructor(
     email: string,
     lastName: string,

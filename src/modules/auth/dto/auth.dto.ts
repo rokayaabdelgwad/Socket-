@@ -5,8 +5,9 @@ export class AuthDto{
         this.email = email;
         this.password = password;
     }
+
     @IsEmail()
-    @IsNotEmpty()
+     @IsOptional()
     email:String ;
 
     @IsOptional()

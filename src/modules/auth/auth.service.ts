@@ -21,7 +21,7 @@ export class AuthService {
   async signup(dto: AuthDto) {
     try {
       const email = dto.email.toString();
-      const password = await argon.hash(dto.password.toString());
+      const hash = await argon.hash(dto.password.toString());
 
       // Check if a user with the provided email already exists
       const existingUser = await this.prisma.user.findUnique({
@@ -37,8 +37,8 @@ export class AuthService {
       const addedUser = await this.prisma.user.create({
         data: {
           email: email,
-          password: password,
-          
+          hash: hash,
+           // Add the password property
         },
       });
 

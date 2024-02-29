@@ -1,6 +1,5 @@
 export class loggingOutAlert {
 	email: string;
-	role: string;
 	oldTokens: [
 		{
 			id: number;

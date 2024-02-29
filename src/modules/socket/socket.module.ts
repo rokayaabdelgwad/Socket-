@@ -1,7 +1,7 @@
-// import { Module } from "@nestjs/common";
-// import { myGatway } from "./socket.gateway";
-// @Module({
-// providers:[myGatway]
-// })
+import { Module } from "@nestjs/common";
+import {SocketGateway } from "./socket.gateway";
+@Module({
+providers:[SocketGateway]
+})
 
-// export class GetwayModule{}
+export class GetwayModule{}

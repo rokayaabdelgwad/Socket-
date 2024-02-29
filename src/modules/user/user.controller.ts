@@ -15,8 +15,8 @@ import {
   UploadedFiles,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/user.dto';
-import { UserDto } from './dto/user.auth.dto';
+import { UserDto } from './dto/user.dto';
+import { UserAuthDto } from './dto/user.auth.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   FileFieldsInterceptor,
@@ -53,24 +53,25 @@ export class UserController {
         { name: 'nationalID_Image', maxCount: 1 },
         { name: 'profile_picture', maxCount: 1 },
       ],
-     {
-          storage: diskStorage({
-            destination: 'uploads/img',
-            filename: (req, file, cb) => {
-              const id: string = uuidv4();
-              const filename = `${id}-${file.fieldname}.${file.mimetype.split('/')[1]}`
-              cb(null, filename);
-              
-            },
-          }),
+      {
+        storage: diskStorage({
+          destination: 'uploads/img',
+          filename: (req, file, cb) => {
+            const id: string = uuidv4();
+            const filename = `${id}-${file.fieldname}.${file.mimetype.split('/')[1]}`;
+            cb(null, filename);
+          },
         }),
-)
+      },
+    ),
+  )
   async createUser(
     @Body() dto: UserDto,
-    @UploadedFiles() profile_picture: MemoryStorageFile,nationalID_Image:Express.Multer.File
+    @UploadedFiles() files: { profile_picture?: MemoryStorageFile, nationalID_Image?: Express.Multer.File },
   ) {
-   const { ...bodyData } = dto;
-    return this.userService.createUser(dto, profile_picture ,nationalID_Image);
+    const { profile_picture, nationalID_Image } = files;
+    const { ...bodyData } = dto;
+    return this.userService.createUser(dto, profile_picture, nationalID_Image);
   }
 
   @Get('get-all-users')
@@ -86,7 +87,7 @@ export class UserController {
   }
 
   @Patch('update-user/:id')
-  updateUser(@Param('id') id: string, @Body() bodyData: UpdateUserDto) {
+  updateUser(@Param('id') id: string, @Body() bodyData: UserDto) {
     return this.userService.update(parseInt(id, 10), bodyData);
   }
 
