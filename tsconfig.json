@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    
+    "types": ["agora-rtm-sdk"],
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
